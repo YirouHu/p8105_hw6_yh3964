@@ -359,6 +359,8 @@ display: none;
 
 <div id="problem-1" class="section level1">
 <h1>Problem 1</h1>
+<div id="section-a" class="section level2">
+<h2>Section a</h2>
 <p>The Washington Post has gathered data on homicides in 50 large U.S.
 cities and made the data available through a GitHub repository here. You
 can read their accompanying article here.</p>
@@ -372,7 +374,7 @@ don’t report victim race.</li>
 white or black.</li>
 <li>Be sure that victim_age is numeric.</li>
 </ul>
-<pre class="r"><code>homicide_data &lt;- read_csv(&quot;homicide-data.csv&quot;) |&gt;
+<pre class="r"><code>homicide_data = read_csv(&quot;homicide-data.csv&quot;) |&gt;
   janitor::clean_names() |&gt;
   mutate(city_state = paste(city, state, sep = &quot;, &quot;),
          resolved = as.numeric(disposition == &quot;Closed by arrest&quot;),
@@ -392,6 +394,51 @@ white or black.</li>
 ## ℹ In argument: `victim_age = as.numeric(victim_age)`.
 ## Caused by warning:
 ## ! NAs introduced by coercion</code></pre>
+</div>
+<div id="section-b" class="section level2">
+<h2>Section b</h2>
+<p>For the city of Baltimore, MD, use the glm function to fit a logistic
+regression with resolved vs unresolved as the outcome and victim age,
+sex and race as predictors.</p>
+<ul>
+<li>Save the output of glm as an R object;</li>
+<li>apply the broom::tidy to this object;</li>
+<li>and obtain the estimate and confidence interval of the adjusted odds
+ratio for solving homicides comparing male victims to female victims
+keeping all other variables fixed.</li>
+</ul>
+<pre class="r"><code>baltimore_df = homicide_data |&gt; 
+  filter(city_state == &quot;Baltimore, MD&quot;)
+
+baltimore_glm = glm(resolved ~ victim_age + victim_sex + victim_race, 
+                     data = baltimore_df, 
+                     family = binomial())
+
+baltimore_model_results = baltimore_glm |&gt; 
+  broom::tidy(conf.int = TRUE) |&gt; 
+  filter(term == &quot;victim_sexMale&quot;) |&gt; 
+  mutate(
+    OR = exp(estimate),
+    CI_lower = exp(conf.low),
+    CI_upper = exp(conf.high)
+  )
+
+male_female_or = 
+  baltimore_model_results |&gt; 
+  pull(OR)
+
+male_female_ci_lower =
+  baltimore_model_results |&gt; 
+  pull(CI_lower) 
+
+male_female_ci_upper = 
+  baltimore_model_results |&gt; 
+  pull(CI_upper)</code></pre>
+<p>The estimate of the adjusted odds ratio for solving homicides
+comparing male victims to female victims keeping all other variables
+fixed is 0.4255117 and the confidence interval is (0.3241908,
+0.5575508).</p>
+</div>
 </div>
 
 
