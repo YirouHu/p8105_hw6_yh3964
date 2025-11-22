@@ -1,0 +1,43 @@
+---
+title: "p8105_hw6_yh3964"
+author: "Yirou Hu"
+date: "2025-11-22"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(modelr)
+library(readr)
+library(p8105.datasets)
+library(knitr)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))  
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+# Problem 1
+
+The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
+
+-   Create a `city_state` variable (e.g. "Baltimore, MD"), and a binary variable indicating whether the homicide is solved.
+-   Omit cities Dallas, TX; Phoenix, AZ; and Kansas City, MO -- these don't report victim race.
+-   Also omit Tulsa, AL -- this is a data entry mistake.
+-   For this problem, limit your analysis those for whom victim_race is white or black.
+-   Be sure that victim_age is numeric.
+
+```{r}
+homicide_data <- read_csv("homicide-data.csv") |>
+  janitor::clean_names() |>
+  mutate(city_state = paste(city, state, sep = ", "),
+         resolved = as.numeric(disposition == "Closed by arrest"),
+          victim_age = as.numeric(victim_age)) |>
+  filter(!city_state %in% c("Dallas, TX", "Phoenix, AZ", "Kansas City, MO", "Tulsa, AL"),
+         victim_race %in% c("White", "Black")) |>
+  drop_na(victim_age)
+```
