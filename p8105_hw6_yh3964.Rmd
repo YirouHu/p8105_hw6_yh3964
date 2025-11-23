@@ -241,3 +241,12 @@ ci_results =
 knitr::kable(ci_results, digits = 3)
 ```
 
+### Comments
+
+- We are 95% confident that the R^2 is somewhere between `r paste0("[", round(ci_results |> filter(term == "r_squared") |> pull(ci_lower), 3), ", ", round(ci_results |> filter(term == "r_squared") |> pull(ci_upper), 3), "]")` and for β₁/β₂ is `r paste0("[", round(ci_results |> filter(term == "beta_ratio") |> pull(ci_lower), 3), ", ", round(ci_results |> filter(term == "beta_ratio") |> pull(ci_upper), 3), "]")`).
+
+- The distribution of $R²$ shows relatively stable and approximately symmetric, concentrated in the 0.935-0.947 range. This indicates the model fit ($R^2$) is highly reliable and exhibits low uncertainty across bootstrap samples.
+
+- The distribution of $\beta_1 / \beta_2$ is strongly skewed with wide spreads. The main body of the distribution is concentrated between approximately $-100$ and $-250$, but the distribution has a long, heavy left tail extending beyond $-400$. This wide spread and pronounced skew reflect substantial instability in the ratio estimate. This instability is likely due to the denominator coefficient $\beta_{prcp}$ being small and close to zero in many bootstrap samples, which makes the ratio highly sensitive to minor variations, leading to large negative outliers.
+
+
