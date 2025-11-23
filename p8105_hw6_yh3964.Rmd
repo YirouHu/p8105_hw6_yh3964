@@ -83,7 +83,7 @@ male_female_ci_upper =
 
 ### Comments 
 
-The estimate of the adjusted odds ratio for solving homicides comparing male victims to female victims keeping all other variables fixed is `r male_female_or`. These results indicate that the odds of having a solved homicide case for male is approximate 0.42 times the odds for a female. Furthermore, we are 95% confident that the true estimate is between (`r baltimore_model_results$lower_ci`, `r baltimore_model_results$upper_ci`).
+The estimate of the adjusted odds ratio for solving homicides comparing male victims to female victims keeping all other variables fixed is `r male_female_or`. These results indicate that the odds of having a solved homicide case for male is approximate 0.43 times the odds for a female. Furthermore, we are 95% confident that the true estimate is between (`r baltimore_model_results$lower_ci`, `r baltimore_model_results$upper_ci`).
 
 ## Section c
 
@@ -110,13 +110,16 @@ city_results = homicide_data |>
     upper_ci = exp(conf.high),
     city_state = fct_reorder(city_state, OR)
   )
+
+city_results
 ```
 
 
 Create a plot that shows the estimated ORs and CIs for each city. Organize cities according to estimated OR, and comment on the plot.
 
 ```{r}
-city_results |> 
+city_results_plot =
+  city_results |> 
   ggplot(aes(x = OR, y = city_state)) +
   geom_point(color = "darkblue", size = 1.5) +
   geom_errorbar(aes(xmin = lower_ci, xmax = upper_ci), width = 0.25) +
@@ -128,6 +131,8 @@ city_results |>
   ) +
   theme_minimal() +
   theme(axis.text.y = element_text(size = 8))
+
+city_results_plot
 ```
 
 ### Comments
@@ -140,3 +145,22 @@ city_results |>
 
 -   The confidence intervals for cities like Fresno, CA, do not cross 1, suggesting a statistically significant difference in the likelihood of solving homicides with male victims compared to female victims.
 
+# Problem 2
+
+For this problem, we'll use the Central Park weather data similar to data we've seen elsewhere. The code chunk below (adapted from the course website) will download these data.
+
+```{r}
+data("weather_df")
+```
+
+The boostrap is helpful when you'd like to perform inference for a parameter/ value/ summary that doesn't have an easy-to-write-down distribution in the usual repeated sampling framework. We'll focus on a simple linear regression with `tmax` as the response with `tmin` and `prcp` as the predictors, and are interested in the distribution of two quantities estimated from these data:
+
+-   $\hat{r}^2$
+-   $\hat{\beta}_1 / \hat{\beta}_2$
+
+Use 5000 bootstrap samples and, for each bootstrap sample, produce estimates of these two quantities.
+
+-   Plot the distribution of your estimates, and describe these in words.
+-   Using the 5000 bootstrap estimates, identify the 2.5% and 97.5% quantiles to provide a 95% confidence interval for $\hat{r}^2$ and $\hat{\beta}_1 / \hat{\beta}_2$.
+
+Note: broom::glance() is helpful for extracting $\hat{r}^2$ from a fitted regression, and `broom::tidy()` (with some additional wrangling) should help in computing $\hat{\beta}_1 / \hat{\beta}_2$.
