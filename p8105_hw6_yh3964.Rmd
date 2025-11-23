@@ -250,3 +250,106 @@ knitr::kable(ci_results, digits = 3)
 - The distribution of $\beta_1 / \beta_2$ is strongly skewed with wide spreads. The main body of the distribution is concentrated between approximately $-100$ and $-250$, but the distribution has a long, heavy left tail extending beyond $-400$. This wide spread and pronounced skew reflect substantial instability in the ratio estimate. This instability is likely due to the denominator coefficient $\beta_{prcp}$ being small and close to zero in many bootstrap samples, which makes the ratio highly sensitive to minor variations, leading to large negative outliers.
 
 
+# Problem 3
+
+In this problem, you will analyze data gathered to understand the effects of several variables on a child’s birthweight. This dataset, available here, consists of roughly 4000 children and includes the following variables:
+
+-   `babysex`: baby's sex (male = 1, female = 2)
+-   `bhead`: baby's head circumference at birth (centimeters)
+-   `blength`: baby's length at birth (centimeteres)
+-   `bwt`: baby's birth weight (grams)
+-   `delwt`: mother's weight at delivery (pounds)
+-   `fincome`: family monthly income (in hundreds, rounded)
+-   `frace`: father's race (1 = White, 2 = Black, 3 = Asian, 4 = Puerto Rican, 8 = Other, 9 = Unknown)
+-   `gaweeks`: gestational age in weeks
+-   `malform`: presence of malformations that could affect weight (0 = absent, 1 = present)
+-   `menarche`: mother's age at menarche (years)
+-   `mheigth`: mother's height (inches)
+-   `momage`: mother's age at delivery (years)
+-   `mrace`: mother's race (1 = White, 2 = Black, 3 = Asian, 4 = Puerto Rican, 8 = Other)
+-   `parity`: number of live births prior to this pregnancy
+-   `pnumlbw`: previous number of low birth weight babies
+-   `pnumgsa`: number of prior small for gestational age babies
+-   `ppbmi`: mother's pre-pregnancy BMI
+-   `ppwt`: mother's pre-pregnancy weight (pounds)
+-   `smoken`: average number of cigarettes smoked per day during pregnancy
+-   `wtgain`: mother's weight gain during pregnancy (pounds)
+
+## Section a
+
+Load and clean the data for regression analysis (i.e. convert numeric to factor where appropriate, check for missing data, etc.).
+
+```{r}
+birth_df =  
+  read.csv('birthweight.csv') |>
+  mutate(
+    baby_sex = factor(babysex, levels = 1:2, labels = c("Male", "Female")),
+    malform_present = factor(malform, levels = 0:1, labels = c("Absent", "Present")),
+    mother_race = factor(mrace, 
+                         levels = c(1, 2, 3, 4, 8), 
+                         labels = c("White", "Black", "Asian", "Puerto Rican", "Other")),
+    father_race = factor(frace, 
+                         levels = c(1, 2, 3, 4, 8, 9), 
+                         labels = c("White", "Black", "Asian", "Puerto Rican", "Other", "Unknown"))
+  ) 
+```
+
+Check for the missing values
+
+```{r}
+missing_tibble =
+  birth_df |> 
+  summarise(across(everything(), ~ sum(is.na(.x)))) |> 
+  pivot_longer(everything(),
+               names_to = "variables",
+               values_to = "number of missing values") 
+
+print(missing_tibble)
+```
+
+From the tibble, we know that there are no missing values in birthweight dataset.
+
+
+Propose a regression model for birthweight.
+
+-   This model may be based on a hypothesized structure for the factors that underly birthweight, on a data-driven model-building process, or a combination of the two.
+-   Describe your modeling process and show a plot of model residuals against fitted values -- use `add_predictions` and `add_residuals` in making this plot.
+
+```{r}
+# Proposed model
+model_proposed = lm(
+  bwt ~ gaweeks + blength + babysex + mheight + ppbmi + wtgain + smoken + momage + mrace, 
+  data = birth_df
+)
+
+summary(model_proposed)
+```
+
+Then let's make plots about Residuals vs. Fitted Values
+```{r}
+resid_plot =
+  birth_df |>
+  add_predictions(model_proposed) |>
+  add_residuals(model_proposed) |>
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(
+    title = "Residuals vs. Fitted Values (Proposed Model)",
+    x = "Fitted Birthweight (grams)",
+    y = "Residuals (grams)"
+  ) +
+  theme_minimal()
+
+print(resid_plot)
+```
+
+### Comments
+
+- The model shows good performance with an Adjusted $R^2$ of 0.6077, explaining approximately 60.8% of the variability in birthweight. 
+
+- The model as a whole is highly significant ($p < 2.2 \times 10^{-16}$). Most predictors are statistically significant ($p < 0.001$), with blength (birth length) showing the strongest effect ($t=59.46$). Factors like gaweeks (gestational weeks), wtgain (weight gain), and ppbmi (pre-pregnancy BMI) are positively correlated with birthweight, while smoken (smoking) is significantly associated with reduced birthweight. babysex (infant sex) is the only variable approaching significance, falling just outside the $\alpha=0.05$ level ($p=0.0897$).
+
+- From the plots, we can observe the points are roughly evenly distributed around zero and randomly scattered around the zero line (red dashed line), supporting the assumption that the model's mean structure is reasonable. However, the plot exhibits Heteroscedasticity: the vertical spread of the residuals is much smaller for lower fitted values.
+
+
