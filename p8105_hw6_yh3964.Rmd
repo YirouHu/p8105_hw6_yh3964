@@ -2,7 +2,7 @@
 title: "p8105_hw6_yh3964"
 author: "Yirou Hu"
 date: "2025-11-22"
-output: html_document
+output: github_document
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
